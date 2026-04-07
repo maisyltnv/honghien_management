@@ -1,0 +1,47 @@
+# ຂໍ້ມູນທີ່ເຊີບເວີສ້າງ / ບໍ່ແມ່ນ source code — ຫຼຸດຂະໜາດ repo ແລະປອດໄພ
+/uploads/
+/backups/
+/update/
+
+# CodeIgniter: cache ແລະ logs (ຄົງໄວ້ແຕ່ index.html ປ້ອງກັນ directory listing)
+/application/cache/*
+!/application/cache/index.html
+/application/logs/*
+!/application/logs/index.html
+
+# phpqrcode: mask cache ສ້າງໃໝ່ໄດ້ຕອນໃຊ້ງານ
+/application/libraries/phpqrcode/cache/
+
+# Composer ຢູ່ root (ຖ້າມື້ໜ້າໃຊ້ composer install)
+/vendor/
+
+# ຄວາມລັບ ແລະຄ່າ config ຕໍ່ເຊີບເວີ
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# Node (ຖ້າມີ script ຫຼື build frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# PHPUnit / ເຄື່ອງມືທົດສອບ
+.phpunit.result.cache
+phpunit.phar
+
+# ຊົ່ວໂມງ Windows (PHP opcache ບາງກໍລະນີ)
+*.tmp
+*.temp
