@@ -4,6 +4,7 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     libzip-dev \
+    libxml2-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
