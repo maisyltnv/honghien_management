@@ -3135,36 +3135,46 @@ class Crud_model extends CI_Model
 
         $purchase_code = $code;
 
-        $personal_token = "FkA9UyDiQT0YiKwYLK3ghyFNRVV9SeUn";
-        $url = "https://api.envato.com/v3/market/author/sale?code=" . $purchase_code;
-        $curl = curl_init($url);
-
-        //setting the header for the rest of the api
-        $bearer   = 'bearer ' . $personal_token;
-        $header   = array();
-        $header[] = 'Content-length: 0';
-        $header[] = 'Content-type: application/json; charset=utf-8';
-        $header[] = 'Authorization: ' . $bearer;
-
-        $verify_url = 'https://api.envato.com/v1/market/private/user/verify-purchase:' . $purchase_code . '.json';
-        $ch_verify = curl_init($verify_url . '?code=' . $purchase_code);
-
-        curl_setopt($ch_verify, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch_verify, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch_verify, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch_verify, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch_verify, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-
-        $cinit_verify_data = curl_exec($ch_verify);
-        curl_close($ch_verify);
-
-        $response = json_decode($cinit_verify_data, true);
-
-        if (count($response['verify-purchase']) > 0) {
-            return true;
-        } else {
+        $personal_token = getenv('ENVATO_PERSONAL_TOKEN');
+        if (!$personal_token) {
+            log_message('error', 'Envato verification failed: ENVATO_PERSONAL_TOKEN not set');
             return false;
         }
+
+        // Envato API v3 (recommended). Docs: https://build.envato.com/api/
+        $url = "https://api.envato.com/v3/market/author/sale?code=" . rawurlencode($purchase_code);
+        $ch = curl_init($url);
+
+        $headers = array(
+            'Content-type: application/json; charset=utf-8',
+            'Authorization: Bearer ' . $personal_token,
+        );
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'AcademyLMS/1.0 (CodeIgniter)');
+
+        $body = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_err = curl_error($ch);
+        curl_close($ch);
+
+        if ($body === false) {
+            log_message('error', 'Envato verification curl error: ' . $curl_err);
+            return false;
+        }
+
+        if ((int)$http_code !== 200) {
+            log_message('error', 'Envato verification failed: HTTP ' . $http_code . ' body=' . substr((string)$body, 0, 300));
+            return false;
+        }
+
+        $response = json_decode($body, true);
+        // v3 author/sale returns a JSON object with keys like: item, buyer, sold_at, support_amount, license, etc.
+        return is_array($response) && isset($response['item']) && !empty($response['item']);
     }
 
 

@@ -20,6 +20,7 @@ services:
       PHP_MEMORY_LIMIT: "${PHP_MEMORY_LIMIT:-256M}"
       PHP_UPLOAD_MAX_FILESIZE: "${PHP_UPLOAD_MAX_FILESIZE:-100M}"
       PHP_POST_MAX_SIZE: "${PHP_POST_MAX_SIZE:-100M}"
+      ENVATO_PERSONAL_TOKEN: "${ENVATO_PERSONAL_TOKEN:-}"
     volumes:
       - ./:/var/www/html
       - ./uploads:/var/www/html/uploads
