@@ -1,0 +1,61 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          # Optional but recommended (prevents MITM). Set this secret if you can.
+          # Example value: "SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          fingerprint: ${{ secrets.VPS_HOST_FINGERPRINT }}
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${APP_DIR:-${{ secrets.APP_DIR }}}"
+            REPO_URL="${REPO_URL:-${{ secrets.REPO_URL }}}"
+
+            if [ -z "${APP_DIR:-}" ]; then
+              echo "APP_DIR is empty. Set the APP_DIR repo secret."
+              exit 1
+            fi
+
+            if [ -z "${REPO_URL:-}" ]; then
+              echo "REPO_URL is empty. Set the REPO_URL repo secret."
+              exit 1
+            fi
+
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            if [ ! -d ".git" ]; then
+              git clone "$REPO_URL" .
+            fi
+
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            # .env.docker must exist on the VPS (DO NOT commit it to git)
+            if [ ! -f ".env.docker" ]; then
+              echo "Missing $APP_DIR/.env.docker on VPS. Create it first."
+              exit 1
+            fi
+
+            docker compose --env-file .env.docker up -d --build
+
+            # Optional cleanup
+            docker image prune -f
+
