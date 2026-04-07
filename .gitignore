@@ -45,3 +45,7 @@ phpunit.phar
 # ຊົ່ວໂມງ Windows (PHP opcache ບາງກໍລະນີ)
 *.tmp
 *.temp
+
+# Docker (ຄ່າຈິງ — ຢ່າອັບ; ໃຊ້ .env.docker.example ເປັນແມ່ແບບ)
+.env.docker
+!.env.docker.example
