@@ -3141,8 +3141,9 @@ class Crud_model extends CI_Model
             return false;
         }
 
-        // Envato API v3 (recommended). Docs: https://build.envato.com/api/
-        $url = "https://api.envato.com/v3/market/author/sale?code=" . rawurlencode($purchase_code);
+        // Buyer purchase lookup (installer user is the buyer). Docs: build.envato.com → "Look up purchase by code"
+        // Do NOT use /market/author/sale here — that is for authors verifying their own sales.
+        $url = "https://api.envato.com/v3/market/buyer/purchase?code=" . rawurlencode($purchase_code);
         $ch = curl_init($url);
 
         $headers = array(
